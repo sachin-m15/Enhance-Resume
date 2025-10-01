@@ -1,6 +1,0 @@
-langchain-groq
-langgraph
-langchain
-pypdf
-reportlab
-python-dotenv
