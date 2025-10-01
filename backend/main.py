@@ -2,7 +2,7 @@ import os
 import uuid
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles  # Import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 import asyncio
 from typing import Dict
@@ -13,8 +13,8 @@ from .utils import parse_pdf_to_text
 # --- App Initialization ---
 app = FastAPI()
 
-# Mount static files (for favicon)
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+# This line is commented out as per our previous step to remove favicon logic
+# app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 
 # --- CORS Middleware ---
@@ -41,7 +41,7 @@ async def read_root():
 # --- Helper Function to run the graph ---
 async def run_graph_for_task(task_id: str, file_content: bytes):
     """
-    Runs the LangGraph resume enhancement process asynchronously.
+    Runs the LangGraph resume enhancement process asynchronously with a timeout.
     """
     try:
         tasks[task_id]["status"] = "parsing_resume"
@@ -52,12 +52,24 @@ async def run_graph_for_task(task_id: str, file_content: bytes):
             return
 
         initial_state = {"original_resume_text": resume_text}
-        tasks[task_id]["status"] = "enhancing_resume"
-        final_state = await resume_enhancement_graph.ainvoke(initial_state)
+
+        # New status update for better frontend feedback
+        tasks[task_id]["status"] = "calling_ai"
+
+        # Run the graph with a 15-second timeout to prevent silent fails on Vercel
+        final_state = await asyncio.wait_for(
+            resume_enhancement_graph.ainvoke(initial_state), timeout=15.0
+        )
 
         tasks[task_id]["status"] = "completed"
         tasks[task_id]["result"] = final_state
 
+    except asyncio.TimeoutError:
+        print(f"Task {task_id} timed out.")
+        tasks[task_id]["status"] = "error"
+        tasks[task_id]["result"] = (
+            "The AI process took too long to respond. This can happen on Vercel's free plan. Please try again."
+        )
     except Exception as e:
         print(f"Error during task {task_id}: {e}")
         tasks[task_id]["status"] = "error"
