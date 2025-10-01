@@ -30,7 +30,7 @@ tasks: Dict[str, Dict] = {}
 # --- Static Files ---
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    # CORRECTED: Path is now relative to the backend/ directory
+    # CORRECTED PATH: Vercel executes from the project root, so this is the right path.
     with open("frontend/index.html") as f:
         return HTMLResponse(content=f.read(), status_code=200)
 
