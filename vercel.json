@@ -1,13 +1,18 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "backend/main.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/enhance-resume/",
+      "src": "/enhance-resume/?",
       "dest": "backend/main.py"
     },
     {
@@ -16,3 +21,4 @@
     }
   ]
 }
+
