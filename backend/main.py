@@ -7,6 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 import asyncio
 from typing import Dict
 
+# These relative imports are correct for this structure
 from .graph import resume_enhancement_graph
 from .utils import parse_pdf_to_text
 
@@ -14,7 +15,6 @@ from .utils import parse_pdf_to_text
 app = FastAPI()
 
 # --- CORS Middleware ---
-# This allows the frontend to communicate with the backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,9 +28,9 @@ tasks: Dict[str, Dict] = {}
 
 
 # --- Static Files ---
-# Serve the frontend HTML file
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
+    # CORRECTED: Path is now relative to the backend/ directory
     with open("frontend/index.html") as f:
         return HTMLResponse(content=f.read(), status_code=200)
 

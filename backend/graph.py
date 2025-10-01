@@ -3,17 +3,17 @@ from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, END
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
-from backend.utils import get_ats_score, generate_pdf_from_text
+
+# CORRECTED: Changed to a relative import within the 'backend' package
+from .utils import get_ats_score, generate_pdf_from_text
 from dotenv import load_dotenv
 
 # --- Environment Variables ---
-# Load environment variables from the .env file in your project root
 load_dotenv()
 
-# Check if the environment variable is now available
 if os.getenv("GROQ_API_KEY") is None:
     raise ValueError(
-        "Please set the GROQ_API_KEY environment variable in your .env file."
+        "Please set the GROQ_API_KEY environment variable in your .env file or Vercel project settings."
     )
 
 # --- Models ---
@@ -114,27 +114,20 @@ async def generate_final_pdf(state: ResumeState):
     """Generates the final PDF from the enhanced resume text."""
     print("---GENERATING FINAL PDF---")
     enhanced_text = state["enhanced_resume_text"]
-    # In a real app, you would save this to a cloud storage and return the URL
-    # For Vercel's ephemeral filesystem, we save it temporarily.
-    # Note: File will be lost on serverless function cold start.
     file_path = await generate_pdf_from_text(enhanced_text)
     print(f"Final PDF generated at: {file_path}")
-    # This example returns the text for simplicity in the frontend.
-    # A real implementation would return a downloadable link.
     return {"final_pdf_path": file_path}
 
 
 # --- Graph Definition ---
 workflow = StateGraph(ResumeState)
 
-# Add nodes
 workflow.add_node("score_original", score_original_resume)
 workflow.add_node("get_suggestions", get_enhancement_suggestions)
 workflow.add_node("enhance_resume", enhance_resume_text)
 workflow.add_node("score_enhanced", score_enhanced_resume)
 workflow.add_node("generate_pdf", generate_final_pdf)
 
-# Define edges
 workflow.set_entry_point("score_original")
 workflow.add_edge("score_original", "get_suggestions")
 workflow.add_edge("get_suggestions", "enhance_resume")
@@ -142,5 +135,4 @@ workflow.add_edge("enhance_resume", "score_enhanced")
 workflow.add_edge("score_enhanced", "generate_pdf")
 workflow.add_edge("generate_pdf", END)
 
-# Compile the graph
 resume_enhancement_graph = workflow.compile()
