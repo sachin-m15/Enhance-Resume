@@ -135,7 +135,7 @@
             formData.append('file', selectedFile);
 
             try {
-                const response = await fetch('/upload/', { method: 'POST', body: formData });
+                const response = await fetch(`${BACKEND_URL}/upload/`, { method: 'POST', body: formData });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
                     throw new Error(errorData.detail || `Upload failed with status: ${response.status}`);
@@ -150,7 +150,7 @@
         function pollStatus(taskId) {
             const interval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/status/${taskId}`);
+                    const response = await fetch(`${BACKEND_URL}/status/${taskId}`);
                     if (!response.ok) throw new Error(`Failed to get status for task ${taskId}`);
                     const data = await response.json();
                     updateProgress(data.status);
