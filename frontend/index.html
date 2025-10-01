@@ -4,19 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intelligent Resume Enhancer</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .loader {
-            border-top-color: #4f46e5; /* Indigo color for loader */
+            border-top-color: #4f46e5;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -36,9 +33,7 @@
                 <div class="flex items-center justify-center w-full">
                     <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 hover:border-indigo-500 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-                            </svg>                              
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>                              
                             <p class="mb-2 text-sm text-slate-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                             <p class="text-xs text-slate-500">PDF only (max 5MB)</p>
                         </div>
@@ -53,9 +48,7 @@
 
             <div id="processing-section" class="hidden bg-white p-8 rounded-xl shadow-xl border border-slate-200 text-center">
                 <h2 class="text-2xl font-semibold mb-4 text-slate-800">Analyzing & Enhancing...</h2>
-                <div class="flex justify-center items-center my-6">
-                    <div class="loader ease-linear rounded-full border-8 border-t-8 border-slate-200 h-24 w-24"></div>
-                </div>
+                <div class="flex justify-center items-center my-6"><div class="loader ease-linear rounded-full border-8 border-t-8 border-slate-200 h-24 w-24"></div></div>
                 <p id="status-message" class="text-slate-600 text-lg">Initializing...</p>
                  <div class="w-full bg-slate-200 rounded-full h-2.5 mt-4 overflow-hidden">
                     <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
@@ -64,83 +57,55 @@
 
             <div id="results-section" class="hidden mt-8">
                 <h2 class="text-3xl font-bold text-center mb-8 text-slate-900">Enhancement Complete!</h2>
-                
                 <div class="grid md:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 text-center overflow-hidden">
                         <div class="border-t-4 border-red-500 -mt-6 -mx-6 mb-6"></div>
-                        <h3 class="text-xl font-semibold text-slate-700 flex items-center justify-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-500">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Original ATS Score
-                        </h3>
+                        <h3 class="text-xl font-semibold text-slate-700">Original ATS Score</h3>
                         <p id="original-score" class="text-5xl font-bold text-red-500 my-4">0%</p>
-                        <p class="text-sm text-slate-500">Estimate of how your original resume would be scored by an ATS.</p>
                     </div>
                     <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 text-center overflow-hidden">
                          <div class="border-t-4 border-green-500 -mt-6 -mx-6 mb-6"></div>
-                        <h3 class="text-xl font-semibold text-slate-700 flex items-center justify-center gap-2">
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-500">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Enhanced ATS Score
-                        </h3>
+                        <h3 class="text-xl font-semibold text-slate-700">Enhanced ATS Score</h3>
                         <p id="enhanced-score" class="text-5xl font-bold text-green-500 my-4">0%</p>
-                        <p class="text-sm text-slate-500">Your new score after AI-powered improvements.</p>
                     </div>
                 </div>
-
                 <div class="bg-white p-8 mt-8 rounded-xl shadow-xl border border-slate-200">
                     <h3 class="text-2xl font-semibold mb-4 text-slate-800">AI Suggestions</h3>
                     <div id="suggestions" class="p-4 bg-slate-900 text-slate-200 rounded-lg whitespace-pre-wrap font-mono text-sm leading-relaxed"></div>
-
                     <h3 class="text-2xl font-semibold mt-8 mb-4 text-slate-800">Enhanced Resume Text</h3>
                     <div id="enhanced-text" class="p-4 h-96 overflow-y-auto bg-slate-900 text-slate-200 rounded-lg whitespace-pre-wrap border border-slate-700 font-mono text-sm leading-relaxed"></div>
                 </div>
-
                 <div class="text-center mt-8">
-                    <button id="start-over-button" class="bg-slate-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-slate-700 transition shadow-md hover:shadow-lg">
-                        Start Over
-                    </button>
+                    <button id="start-over-button" class="bg-slate-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-slate-700 transition shadow-md hover:shadow-lg">Start Over</button>
                 </div>
             </div>
             
             <div id="error-section" class="hidden mt-8 text-center bg-red-100 p-8 rounded-xl border border-red-300">
                  <h2 class="text-2xl font-semibold text-red-800 mb-4">An Error Occurred</h2>
                  <p id="error-message" class="text-red-700"></p>
-                 <button id="retry-button" class="mt-6 bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition shadow-md hover:shadow-lg">
-                    Try Again
-                </button>
+                 <button id="retry-button" class="mt-6 bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition shadow-md hover:shadow-lg">Try Again</button>
             </div>
         </main>
     </div>
 
     <footer class="text-center py-6">
-    <p class="text-slate-500 text-sm">
-        Made by Sachin Mishra <a href="https://www.linkedin.com/in/sachin-mishra-325444271/" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 hover:underline">(linkedin)</a>
-    </p>
-</footer>
-
+        <p class="text-slate-500 text-sm">Made by Sachin Mishra <a href="https://www.linkedin.com/in/sachin-mishra-325444271/" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 hover:underline">(linkedin)</a></p>
+    </footer>
 
     <script>
-        // JavaScript remains unchanged as it correctly handles the logic.
         const uploadSection = document.getElementById('upload-section');
         const processingSection = document.getElementById('processing-section');
         const resultsSection = document.getElementById('results-section');
         const errorSection = document.getElementById('error-section');
-        
         const fileInput = document.getElementById('dropzone-file');
         const fileNameDisplay = document.getElementById('file-name');
         const uploadButton = document.getElementById('upload-button');
-        
         const statusMessage = document.getElementById('status-message');
         const progressBar = document.getElementById('progress-bar');
-        
         const originalScoreEl = document.getElementById('original-score');
         const enhancedScoreEl = document.getElementById('enhanced-score');
         const suggestionsEl = document.getElementById('suggestions');
         const enhancedTextEl = document.getElementById('enhanced-text');
-        
         const errorMessageEl = document.getElementById('error-message');
         const startOverButton = document.getElementById('start-over-button');
         const retryButton = document.getElementById('retry-button');
@@ -160,7 +125,6 @@
 
         uploadButton.addEventListener('click', async () => {
             if (!selectedFile) return;
-
             uploadSection.classList.add('hidden');
             processingSection.classList.remove('hidden');
             resultsSection.classList.add('hidden');
@@ -170,21 +134,13 @@
             formData.append('file', selectedFile);
 
             try {
-                // Use relative URL for Vercel deployment
-                const response = await fetch('/upload/', {
-                    method: 'POST',
-                    body: formData,
-                });
-
+                const response = await fetch('/upload/', { method: 'POST', body: formData });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
                     throw new Error(errorData.detail || `Upload failed with status: ${response.status}`);
                 }
-
                 const data = await response.json();
-                const taskId = data.task_id;
-                pollStatus(taskId);
-
+                pollStatus(data.task_id);
             } catch (error) {
                 showError(error.message);
             }
@@ -193,15 +149,10 @@
         function pollStatus(taskId) {
             const interval = setInterval(async () => {
                 try {
-                    // Use relative URL
                     const response = await fetch(`/status/${taskId}`);
-                    if (!response.ok) {
-                        throw new Error(`Failed to get status for task ${taskId}`);
-                    }
-                    
+                    if (!response.ok) throw new Error(`Failed to get status for task ${taskId}`);
                     const data = await response.json();
                     updateProgress(data.status);
-
                     if (data.status === 'completed') {
                         clearInterval(interval);
                         displayResults(data.result);
@@ -233,7 +184,6 @@
         function displayResults(result) {
             processingSection.classList.add('hidden');
             resultsSection.classList.remove('hidden');
-            
             originalScoreEl.textContent = `${result.original_ats_score || 0}%`;
             enhancedScoreEl.textContent = `${result.enhanced_ats_score || 0}%`;
             suggestionsEl.textContent = result.enhancement_suggestions || 'No suggestions available.';
@@ -252,7 +202,6 @@
             processingSection.classList.add('hidden');
             resultsSection.classList.add('hidden');
             errorSection.classList.add('hidden');
-
             selectedFile = null;
             fileInput.value = '';
             fileNameDisplay.textContent = '';
@@ -263,7 +212,6 @@
 
         startOverButton.addEventListener('click', resetUI);
         retryButton.addEventListener('click', resetUI);
-
     </script>
 </body>
 </html>
