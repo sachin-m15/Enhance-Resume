@@ -1,69 +1,98 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import Response
-from fastapi.middleware.cors import CORSMiddleware
-from .graph import resume_enhancement_graph
-from .utils import extract_text_from_pdf
+import uuid
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
+import asyncio
+from typing import Dict
 
+from .graph import resume_enhancement_graph
+from .utils import parse_pdf_to_text
+
+# --- App Initialization ---
 app = FastAPI()
 
-# Configure CORS
+# --- CORS Middleware ---
+# This allows the frontend to communicate with the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for simplicity, restrict in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-@app.get("/")
-def read_root():
-    return {"message": "Intelligent Resume Enhancement System API is running."}
+# In-memory storage for task status and results
+tasks: Dict[str, Dict] = {}
 
 
-@app.post("/enhance-resume/")
-async def enhance_resume(file: UploadFile = File(...)):
-    if file.content_type != "application/pdf":
-        raise HTTPException(
-            status_code=400, detail="Invalid file type. Only PDF is accepted."
-        )
+# --- Static Files ---
+# Serve the frontend HTML file
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    with open("frontend/index.html") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
 
+
+# --- Helper Function to run the graph ---
+async def run_graph_for_task(task_id: str, file_content: bytes):
+    """
+    Runs the LangGraph resume enhancement process asynchronously.
+    """
     try:
-        # Save the uploaded file temporarily
-        temp_file_path = f"/tmp/{file.filename}"
-        with open(temp_file_path, "wb") as buffer:
-            buffer.write(await file.read())
+        tasks[task_id]["status"] = "parsing_resume"
+        # Step 1: Parse PDF to text
+        resume_text = await parse_pdf_to_text(file_content)
+        if not resume_text or len(resume_text) < 50:
+            tasks[task_id]["status"] = "error"
+            tasks[task_id]["result"] = "Failed to parse resume or content too short."
+            return
 
-        # Process the resume
-        inputs = {"resume_path": temp_file_path}
-        result = resume_enhancement_graph.invoke(inputs)
+        initial_state = {"original_resume_text": resume_text}
 
-        original_score = result.get("original_ats_score", 0)
-        enhanced_score = result.get("enhanced_ats_score", 100)
-        pdf_bytes = result.get("enhanced_pdf_bytes")
+        tasks[task_id]["status"] = "enhancing_resume"
 
-        if not pdf_bytes:
-            raise HTTPException(
-                status_code=500, detail="Failed to generate enhanced PDF."
-            )
+        # Step 2: Run the graph
+        final_state = await resume_enhancement_graph.ainvoke(initial_state)
 
-        # Clean up the temporary file
-        os.remove(temp_file_path)
-
-        headers = {
-            "Content-Disposition": 'attachment; filename="enhanced_resume.pdf"',
-            "X-Original-ATS-Score": str(original_score),
-            "X-Enhanced-ATS-Score": str(enhanced_score),
-            "Access-Control-Expose-Headers": "X-Original-ATS-Score, X-Enhanced-ATS-Score",
-        }
-
-        return Response(
-            content=pdf_bytes, media_type="application/pdf", headers=headers
-        )
+        tasks[task_id]["status"] = "completed"
+        tasks[task_id]["result"] = final_state
 
     except Exception as e:
-        # Clean up in case of error
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error during task {task_id}: {e}")
+        tasks[task_id]["status"] = "error"
+        tasks[task_id]["result"] = str(e)
+
+
+# --- API Endpoints ---
+@app.post("/upload/")
+async def upload_resume(file: UploadFile = File(...)):
+    """
+    Handles resume upload, initiates the enhancement process, and returns a task ID.
+    """
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Please upload a PDF."
+        )
+
+    task_id = str(uuid.uuid4())
+    tasks[task_id] = {"status": "processing"}
+
+    file_content = await file.read()
+
+    # Run the graph in the background
+    asyncio.create_task(run_graph_for_task(task_id, file_content))
+
+    return {"task_id": task_id}
+
+
+@app.get("/status/{task_id}")
+async def get_status(task_id: str):
+    """
+    Checks the status of a given task.
+    """
+    task = tasks.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return JSONResponse(content=task)
