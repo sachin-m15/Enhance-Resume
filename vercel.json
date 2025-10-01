@@ -7,9 +7,12 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/enhance-resume/",
       "dest": "backend/main.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/index.html"
     }
   ]
 }
-
