@@ -81,7 +81,7 @@ uvicorn backend.main:app --reload
 The server will be running at http://12.0.0.1:8000.
 ```
 6. Access the Application
-Open your web browser and navigate to http://127.0.0.1:8000. The backend now serves the frontend file directly.
+Open your web browser and navigate to https://enhance-resume-1.onrender.com/ . The backend now serves the frontend file directly.
 ```
 Deployment on Render
 This application is configured for easy deployment on Render.
