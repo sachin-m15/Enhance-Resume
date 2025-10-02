@@ -7,6 +7,8 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ADDED: jsPDF library for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .loader {
@@ -72,7 +74,12 @@
                 <div class="bg-white p-8 mt-8 rounded-xl shadow-xl border border-slate-200">
                     <h3 class="text-2xl font-semibold mb-4 text-slate-800">AI Suggestions</h3>
                     <div id="suggestions" class="p-4 bg-slate-900 text-slate-200 rounded-lg whitespace-pre-wrap font-mono text-sm leading-relaxed"></div>
-                    <h3 class="text-2xl font-semibold mt-8 mb-4 text-slate-800">Enhanced Resume Text</h3>
+                    
+                    <!-- ADDED: Header for enhanced text with download button -->
+                    <div class="flex justify-between items-center mt-8 mb-4">
+                        <h3 class="text-2xl font-semibold text-slate-800">Enhanced Resume Text</h3>
+                        <button id="download-button" class="bg-green-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-green-700 transition shadow-md hover:shadow-lg disabled:bg-slate-400 disabled:shadow-none" disabled>Download PDF</button>
+                    </div>
                     <div id="enhanced-text" class="p-4 h-96 overflow-y-auto bg-slate-900 text-slate-200 rounded-lg whitespace-pre-wrap border border-slate-700 font-mono text-sm leading-relaxed"></div>
                 </div>
                 <div class="text-center mt-8">
@@ -93,6 +100,7 @@
     </footer>
 
     <script>
+        // --- DOM Element References ---
         const uploadSection = document.getElementById('upload-section');
         const processingSection = document.getElementById('processing-section');
         const resultsSection = document.getElementById('results-section');
@@ -109,10 +117,12 @@
         const errorMessageEl = document.getElementById('error-message');
         const startOverButton = document.getElementById('start-over-button');
         const retryButton = document.getElementById('retry-button');
+        const downloadButton = document.getElementById('download-button'); // ADDED
         const BACKEND_URL = 'https://enhance-resume.onrender.com';
 
         let selectedFile = null;
-
+        
+        // --- Event Listeners ---
         fileInput.addEventListener('change', (event) => {
             selectedFile = event.target.files[0];
             if (selectedFile) {
@@ -124,7 +134,13 @@
             }
         });
 
-        uploadButton.addEventListener('click', async () => {
+        uploadButton.addEventListener('click', handleUpload);
+        downloadButton.addEventListener('click', handleDownload); // ADDED
+        startOverButton.addEventListener('click', resetUI);
+        retryButton.addEventListener('click', resetUI);
+        
+        // --- Core Functions ---
+        async function handleUpload() {
             if (!selectedFile) return;
             uploadSection.classList.add('hidden');
             processingSection.classList.remove('hidden');
@@ -145,7 +161,7 @@
             } catch (error) {
                 showError(error.message);
             }
-        });
+        }
 
         function pollStatus(taskId) {
             const interval = setInterval(async () => {
@@ -168,6 +184,26 @@
             }, 2000);
         }
 
+        // ADDED: Function to handle PDF download
+        function handleDownload() {
+            const textToDownload = enhancedTextEl.textContent;
+            if (!textToDownload || textToDownload.trim() === "") {
+                alert("There is no resume text to download.");
+                return;
+            }
+            if (typeof window.jspdf === 'undefined') {
+                showError("PDF library not loaded. Please check your connection and refresh.");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ format: 'a4' });
+            const lines = doc.splitTextToSize(textToDownload, 180); // 180mm margin width
+            doc.setFontSize(11);
+            doc.text(lines, 15, 20); // x, y position in mm
+            doc.save('enhanced_resume.pdf');
+        }
+
+        // --- UI Update Functions ---
         function updateProgress(status) {
             const statusMap = {
                 'processing': { message: 'Uploading resume...', width: '10%' },
@@ -188,7 +224,13 @@
             originalScoreEl.textContent = `${result.original_ats_score || 0}%`;
             enhancedScoreEl.textContent = `${result.enhanced_ats_score || 0}%`;
             suggestionsEl.textContent = result.enhancement_suggestions || 'No suggestions available.';
-            enhancedTextEl.textContent = result.enhanced_resume_text || 'No enhanced text available.';
+            const enhancedText = result.enhanced_resume_text || 'No enhanced text available.';
+            enhancedTextEl.textContent = enhancedText;
+
+            // CHANGED: Enable download button if text exists
+            if (result.enhanced_resume_text) {
+                downloadButton.disabled = false;
+            }
         }
 
         function showError(message) {
@@ -207,12 +249,11 @@
             fileInput.value = '';
             fileNameDisplay.textContent = '';
             uploadButton.disabled = true;
+            downloadButton.disabled = true; // CHANGED
             progressBar.style.width = '0%';
             statusMessage.textContent = 'Initializing...';
         }
-
-        startOverButton.addEventListener('click', resetUI);
-        retryButton.addEventListener('click', resetUI);
     </script>
 </body>
 </html>
+
